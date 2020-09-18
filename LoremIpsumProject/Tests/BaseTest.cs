@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -48,7 +49,17 @@ namespace LoremIpsumProject.Tests
 
         public void WaitVisibilityOfElements(IWebElement element)
         {
-            
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            do
+            {
+                if (element.Displayed)
+                {
+                    return;
+                }
+            } while (stopwatch.ElapsedMilliseconds < timeout);
+            throw new Exception("element not found");
         }
 
         [SetUp]
@@ -88,7 +99,7 @@ namespace LoremIpsumProject.Tests
             number_field.Clear();
             number_field.SendKeys(Convert.ToString(value));
             generate_button.Click();
-            WaitForPageLoadComplete();
+            WaitVisibilityOfElements(number_of_words);
             int length = number_of_words.Text.Trim(new char[] { ',', '.' }).Split(new char[] { ' ' }).Length;
             Assert.AreEqual(value, length);
         }
