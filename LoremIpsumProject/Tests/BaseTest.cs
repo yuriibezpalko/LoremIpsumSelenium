@@ -75,7 +75,7 @@ namespace LoremIpsumProject.Tests
         public void CheckTheWordAppearsCorrectly()
         {
             russian_button.Click();
-            WaitForPageLoadComplete();
+            WaitForElement(first_element_text, wait);
             Assert.IsTrue(first_element_text.Text.Contains("рыба"));
         }
 
@@ -94,13 +94,21 @@ namespace LoremIpsumProject.Tests
         [TestCase(10)]
         public void CheckThatGeneratedSizeCorrect(int value)
         {
-            words.Click();
-            number_field.Clear();
-            number_field.SendKeys(Convert.ToString(value));
-            generate_button.Click();
-            WaitForElement(number_of_words, wait);
-            string for_test = number_of_words.Text;
-            int length = number_of_words.Text.Trim(new char[] { ',', '.' }).Split(" ").Length;
+            int length;
+            if (value <= 0)
+            {
+                length = value;
+                throw new ArgumentOutOfRangeException("words length");
+            }
+            else
+            {
+                words.Click();
+                number_field.Clear();
+                number_field.SendKeys(Convert.ToString(value));
+                generate_button.Click();
+                WaitForElement(number_of_words, wait);
+                length = number_of_words.Text.Trim(new char[] { ',', '.' }).Split(" ").Length;
+            }
             Assert.AreEqual(value, length);
         }
 
