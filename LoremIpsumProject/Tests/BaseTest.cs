@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using NUnit.Framework;
 using OpenQA.Selenium;
@@ -156,23 +157,26 @@ namespace LoremIpsumProject.Tests
             Assert.IsFalse(starting_text.Text.StartsWith("Lorem ipsum"));
         }
 
-        [Test]
-        public void CheckThatParagraphTextContainsSearchingWord()
+        [TestCase("lorem")]
+        [TestCase("ipsum")]
+        public void CheckThatParagraphTextContainsSearchingWord(string searchTerm)
         {
-            generate_button.Click();
-            double average;
-            int number = 0;
-            for (int i = 1; i < 11; i++)
+            IList<string[]> all = new List<string[]>();
+            ReadOnlyCollection<IWebElement> elementTexts;
+
+            for (int i = 0; i < 10; i++)
             {
-                IList<string> all = new List<string>();
-                foreach (IWebElement element in driver.FindElements((By)paragraphs_list))
+                generate_button.Click();
+                elementTexts = driver.FindElements(By.XPath("//*[@id='lipsum']/p"));
+                foreach (var element in elementTexts)
                 {
-                    all.Add(element.Text);
+                    all.Add(element.Text.Split(new char[] { '.', '?', '!', ' ', ';', ':', ',' }, StringSplitOptions.RemoveEmptyEntries));
                 }
-                number += all.Where(x => x.Contains("lorem")).Count();
+                driver.Navigate().GoToUrl(test_url);
             }
-            average = number / 10;
-            Assert.IsTrue(average > 2 && average < 3);
+
+            int average = (all.Select(x => Array.FindAll(x, y => y.ToLower() == searchTerm).Count()).Sum()) / 10;
+            Assert.IsTrue(Enumerable.Range(1, 2).Contains(average), $"Expected to be {true}, but got {average}");
         }
 
         [TearDown]
