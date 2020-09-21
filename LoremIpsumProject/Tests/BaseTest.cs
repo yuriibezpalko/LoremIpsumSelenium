@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -34,6 +37,18 @@ namespace LoremIpsumProject.Tests
 
         [FindsBy(How = How.Id, Using = "lipsum")]
         private IWebElement number_of_words;
+
+        [FindsBy(How = How.XPath, Using = "//label[@for='bytes']")]
+        private IWebElement bytes;
+
+        [FindsBy(How = How.XPath, Using = "//input[@type='checkbox']")]
+        private IWebElement checkbox;
+
+        [FindsBy(How = How.XPath, Using = "//*[@id='lipsum']/p")]
+        private IWebElement paragraphs_list;
+
+        [FindsBy(How = How.CssSelector, Using = "#lipsum > p:nth-child(1)")]
+        private IWebElement starting_text;
 
         private readonly long timeout = 3000;
 
@@ -92,13 +107,12 @@ namespace LoremIpsumProject.Tests
         [TestCase(0)]
         [TestCase(5)]
         [TestCase(10)]
-        public void CheckThatGeneratedSizeCorrect(int value)
+        public void CheckThatGeneratedWordSizeIsCorrect(int value)
         {
             int length;
             if (value <= 0)
             {
                 length = value;
-                throw new ArgumentOutOfRangeException("words length");
             }
             else
             {
@@ -110,6 +124,55 @@ namespace LoremIpsumProject.Tests
                 length = number_of_words.Text.Trim(new char[] { ',', '.' }).Split(" ").Length;
             }
             Assert.AreEqual(value, length);
+        }
+
+        [TestCase(5)]
+        [TestCase(10)]
+        [TestCase(0)]
+        [TestCase(1)]
+        public void CheckThatGeneratedByteSizeIsCorrect(int value)
+        {
+            int length;
+            if (value < 3)
+            {
+                length = value;
+            }
+            else
+            {
+                bytes.Click();
+                number_field.Clear();
+                number_field.SendKeys(Convert.ToString(value));
+                generate_button.Click();
+                WaitForElement(number_of_words, wait);
+                length = number_of_words.Text.ToCharArray().Length;
+            }
+            Assert.AreEqual(value, length);
+        }
+
+        public void CheckboxVerifying()
+        {
+            checkbox.Click();
+            generate_button.Click();
+            Assert.IsFalse(starting_text.Text.StartsWith("Lorem ipsum"));
+        }
+
+        [Test]
+        public void CheckThatParagraphTextContainsSearchingWord()
+        {
+            generate_button.Click();
+            double average;
+            int number = 0;
+            for (int i = 1; i < 11; i++)
+            {
+                IList<string> all = new List<string>();
+                foreach (IWebElement element in driver.FindElements((By)paragraphs_list))
+                {
+                    all.Add(element.Text);
+                }
+                number += all.Where(x => x.Contains("lorem")).Count();
+            }
+            average = number / 10;
+            Assert.IsTrue(average > 2 && average < 3);
         }
 
         [TearDown]
