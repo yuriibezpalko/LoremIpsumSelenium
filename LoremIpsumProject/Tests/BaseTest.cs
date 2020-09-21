@@ -157,26 +157,26 @@ namespace LoremIpsumProject.Tests
             Assert.IsFalse(starting_text.Text.StartsWith("Lorem ipsum"));
         }
 
-        [TestCase("lorem")]
-        [TestCase("ipsum")]
-        public void CheckThatParagraphTextContainsSearchingWord(string searchTerm)
+        [TestCase("lorem", 2)]
+        [TestCase("ipsum", 100)]
+        public void CheckThatParagraphTextContainsSearchingWord(string searchTerm, int num_of_itertions = 10)
         {
-            IList<string[]> all = new List<string[]>();
+            int all_word_matches = 0;
             ReadOnlyCollection<IWebElement> elementTexts;
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < num_of_itertions; i++)
             {
                 generate_button.Click();
                 elementTexts = driver.FindElements(By.XPath("//*[@id='lipsum']/p"));
-                foreach (var element in elementTexts)
-                {
-                    all.Add(element.Text.Split(new char[] { '.', '?', '!', ' ', ';', ':', ',' }, StringSplitOptions.RemoveEmptyEntries));
-                }
+
+                all_word_matches += elementTexts
+                    .Select(x => x.Text.Split(new char[] { '.', '?', '!', ' ', ';', ':', ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    .Select(x => Array.FindAll(x, y => y.ToLower() == searchTerm).Count()).Sum();
                 driver.Navigate().GoToUrl(test_url);
             }
 
-            int average = (all.Select(x => Array.FindAll(x, y => y.ToLower() == searchTerm).Count()).Sum()) / 10;
-            Assert.IsTrue(Enumerable.Range(1, 2).Contains(average), $"Expected to be {true}, but got {average}");
+            int average = all_word_matches / num_of_itertions;
+            Assert.IsTrue(Enumerable.Range(2, 3).Contains(average), $"Expected to be {true}, but got {average}");
         }
 
         [TearDown]
