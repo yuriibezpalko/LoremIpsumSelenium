@@ -122,7 +122,9 @@ namespace LoremIpsumProject.Tests
                 number_field.SendKeys(Convert.ToString(value));
                 generate_button.Click();
                 WaitForElement(number_of_words, wait);
-                length = number_of_words.Text.Trim(new char[] { ',', '.' }).Split(" ").Length;
+                length = number_of_words.Text
+                    .Trim(new char[] { ',', '.' })
+                    .Split(" ").Length;
             }
             Assert.AreEqual(value, length);
         }
@@ -159,24 +161,33 @@ namespace LoremIpsumProject.Tests
 
         [TestCase("lorem", 2)]
         [TestCase("ipsum", 100)]
-        public void CheckThatParagraphTextContainsSearchingWord(string searchTerm, int num_of_itertions = 10)
+        public void CheckThatParagraphTextContainsSearchingWord(string searchTerm, int num_of_iterations = 10)
         {
             int all_word_matches = 0;
             ReadOnlyCollection<IWebElement> elementTexts;
 
-            for (int i = 0; i < num_of_itertions; i++)
+            for (int i = 0; i < num_of_iterations; i++)
             {
                 generate_button.Click();
-                elementTexts = driver.FindElements(By.XPath("//*[@id='lipsum']/p"));
+                elementTexts = driver
+                    .FindElements(By.XPath("//*[@id='lipsum']/p"));
 
                 all_word_matches += elementTexts
-                    .Select(x => x.Text.Split(new char[] { '.', '?', '!', ' ', ';', ':', ',' }, StringSplitOptions.RemoveEmptyEntries))
-                    .Select(x => Array.FindAll(x, y => y.ToLower() == searchTerm).Count()).Sum();
-                driver.Navigate().GoToUrl(test_url);
+                    .Select(x => x.Text
+                    .Split(new char[] { '.', '?', '!', ' ', ';', ':', ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    .Select(x => Array
+                    .FindAll(x, y => y
+                    .ToLower() == searchTerm).Count()).Sum();
+                driver
+                    .Navigate()
+                    .GoToUrl(test_url);
             }
 
-            int average = all_word_matches / num_of_itertions;
-            Assert.IsTrue(Enumerable.Range(2, 3).Contains(average), $"Expected to be {true}, but got {average}");
+            int average = all_word_matches / num_of_iterations;
+            Assert
+                .IsTrue(Enumerable
+                .Range(2, 3)
+                .Contains(average), $"Expected to be {true}, but got {average}");
         }
 
         [TearDown]
