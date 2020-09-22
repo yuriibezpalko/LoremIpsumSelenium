@@ -159,9 +159,8 @@ namespace LoremIpsumProject.Tests
             Assert.IsFalse(starting_text.Text.StartsWith("Lorem ipsum"));
         }
 
-        [TestCase("lorem", 2)]
-        [TestCase("ipsum", 100)]
-        public void CheckThatParagraphTextContainsSearchingWord(string searchTerm, int num_of_iterations = 10)
+        [TestCase("lorem", 10)]
+        public void CheckAverageNumberOfGeneratedParagraphsWithWord(string searchTerm, int num_of_iterations = 10)
         {
             int all_word_matches = 0;
             ReadOnlyCollection<IWebElement> elementTexts;
@@ -173,11 +172,7 @@ namespace LoremIpsumProject.Tests
                     .FindElements(By.XPath("//*[@id='lipsum']/p"));
 
                 all_word_matches += elementTexts
-                    .Select(x => x.Text
-                    .Split(new char[] { '.', '?', '!', ' ', ';', ':', ',' }, StringSplitOptions.RemoveEmptyEntries))
-                    .Select(x => Array
-                    .FindAll(x, y => y
-                    .ToLower() == searchTerm).Count()).Sum();
+                    .Select(x => x.Text.Contains("lorem")).Count();
                 driver
                     .Navigate()
                     .GoToUrl(test_url);
